@@ -18,10 +18,10 @@ import seaborn as sns
 plt.style.use('ggplot')
 
 class VAE_oversampling:
-    def __init__(self, epochs=10, hidden_dim=10,
-                 batch_size=1, latent_dim=2, original_dim=30,
-                 minority_class_id=1, 
-                 random_state=0, num_samples_to_generate=100,
+    def __init__(self, epochs, hidden_dim,
+                 batch_size, latent_dim, original_dim,
+                 minority_class_id, 
+                 random_state, num_samples_to_generate,
                  optimizer = "adam"):
         self.epochs = epochs
         self.batch_size = batch_size
