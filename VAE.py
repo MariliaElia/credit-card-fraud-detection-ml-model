@@ -102,7 +102,7 @@ class VAE_oversampling:
         return vae
     
     def fit_sample(self, Xtrain, ytrain):
-         #Number of samples to generate
+        #Number of samples to generate
         num_samples_to_generate = self.num_samples_to_generate
         
         #Scale the data set
