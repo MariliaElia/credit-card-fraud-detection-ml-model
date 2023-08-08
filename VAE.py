@@ -39,7 +39,9 @@ class VAE_oversampling:
     #Reparameterization function
     def sampling(self, args):
         z_mean, z_log_var = args
-        epsilon = K.random_normal(shape=(K.shape(z_mean)[0], 2))
+        batch = K.shape(z_mean)[0]
+        dim = K.int_shape(z_mean)[1]
+        epsilon = K.random_normal(shape=(batch, dim))
         return z_mean + K.exp(0.5*z_log_var) * epsilon
     
     def display_vae_training_history(self, history):        
@@ -89,7 +91,8 @@ class VAE_oversampling:
         #The total vae loss
         vae_loss = K.mean(reconstruction_loss + kl_loss)
         vae.add_loss(vae_loss)
-
+        
+        #compile model
         vae.compile(optimizer=self.optimizer)
 
         history = vae.fit(X_train_AE, X_train_AE, self.batch_size, self.epochs, validation_split=0.1)

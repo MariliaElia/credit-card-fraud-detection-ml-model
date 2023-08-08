@@ -4,13 +4,12 @@ from matplotlib import pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from tensorflow import keras
 from tensorflow.keras import layers, regularizers
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam, Adamax
 from tensorflow.keras.utils import plot_model
 from keras import backend as K
 
 class GAN:
-    def __init__(self, input_dim, generator_output_dim, discriminator_input_dim, noise_dim, num_samples, epochs, batch_size, dropout):
-        self.input_dim = input_dim
+    def __init__(self, generator_output_dim, discriminator_input_dim, noise_dim, num_samples, epochs, batch_size, dropout):
         self.generator_output_dim = generator_output_dim
         self.discriminator_input_dim = discriminator_input_dim
         self.noise_dim = noise_dim
@@ -34,7 +33,7 @@ class GAN:
         plot_model(discriminator, 'discriminator.jpg', show_shapes=True,show_dtype=True)
         discriminator.compile(
                     loss="binary_crossentropy",
-                    optimizer=Adam(lr=0.00002, beta_1=0.5),
+                    optimizer=Adamax(lr=0.00002, beta_1=0.5),
                     metrics=["accuracy"],
                 )
         
@@ -62,7 +61,7 @@ class GAN:
         gan.add(self.generator)
         gan.add(self.discriminator)
        
-        gan.compile(loss=self.generator_loss, optimizer=Adam(lr=0.00002, beta_1=0.5))
+        gan.compile(loss=self.generator_loss, optimizer=Adamax(lr=0.00002, beta_1=0.5))
         gan.summary()
 
         self.gan = gan
