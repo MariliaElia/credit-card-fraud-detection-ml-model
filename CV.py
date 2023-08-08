@@ -3,6 +3,7 @@ from sklearn import metrics
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import cross_validate
 
 # Visual Libraries
 from matplotlib import pyplot as plt
@@ -10,7 +11,7 @@ import seaborn as sns
 plt.style.use('ggplot')
 
 #Sampling Libraries
-from imblearn.over_sampling import SMOTE
+from imblearn.over_sampling import SMOTE, ADASYN
 from imblearn.under_sampling import RandomUnderSampler
 
 # Imported Libraries
@@ -39,11 +40,19 @@ def model_scores(y_true, y_pred):
     print("ROC_AUC:", roc_auc_score(y_true, y_pred))
 
 def cross_val_scores(scores):
-    print(f"Accuracy:, {scores['test_accuracy'].mean():0.6f} (+/- {scores['test_accuracy'].std():0.6f})")
-    print(f"Precision: {scores['test_precision'].mean():0.6f} (+/- {scores['test_precision'].std():0.6f})")
-    print(f"Recall: {scores['test_recall'].mean():0.6f} (+/- {scores['test_recall'].std():0.6f})")
-    print(f"F1 score: {scores['test_f1'].mean():0.6f} (+/- {scores['test_f1'].std():0.6f})")
-    print(f"ROC_AUC: {scores['test_roc_auc'].mean():0.6f} (+/- {scores['test_roc_auc'].std():0.6f})")
+    print("---------- Validation Results ---------------")
+    print(f"Accuracy:, {np.mean(scores['test_accuracy']):0.6f} (+/- {np.std(scores['test_accuracy']):0.6f})")
+    print(f"Precision: {np.mean(scores['test_precision']):0.6f} (+/- {np.std(scores['test_precision']):0.6f})")
+    print(f"Recall: {np.mean(scores['test_recall']):0.6f} (+/- {np.std(scores['test_recall']):0.6f})")
+    print(f"F1 score: {np.mean(scores['test_f1']):0.6f} (+/- {np.std(scores['test_f1']):0.6f})")
+    print(f"ROC_AUC: {np.mean(scores['test_roc_auc']):0.6f} (+/- {np.std(scores['test_roc_auc']):0.6f})")
+
+    print("---------- Training Results -------------")
+    print(f"Accuracy:, {np.mean(scores['train_accuracy']):0.6f} (+/- {np.std(scores['train_accuracy']):0.6f})")
+    print(f"Precision: {np.mean(scores['train_precision']):0.6f} (+/- {np.std(scores['train_precision']):0.6f})")
+    print(f"Recall: {np.mean(scores['train_recall']):0.6f} (+/- {np.std(scores['train_recall']):0.6f})")
+    print(f"F1 score: {np.mean(scores['train_f1']):0.6f} (+/- {np.std(scores['train_f1']):0.6f})")
+    print(f"ROC_AUC: {np.mean(scores['train_roc_auc']):0.6f} (+/- {np.std(scores['train_roc_auc']):0.6f})")
 
 def plot_roc_curve(model, y_true, X, axis):
     y_pred_proba = model.predict_proba(X)[::,1]
@@ -88,6 +97,12 @@ def model_cv(X_train, y_train, model, score, param_grid, sampling_technique = No
                             [['pre_process', StandardScaler()],
                             ['smote', SMOTE(random_state=1)],
                             ['classifier', model]])
+    elif sampling_technique =='adasyn':
+        print("ADASYN applied")
+        pipeline = Pipeline(steps=
+                            [['pre_process', StandardScaler()],
+                            ['adasyn', ADASYN(random_state=1)],
+                            ['classifier', model]])
     elif sampling_technique =='undersampling':
         pipeline = Pipeline(steps=
                             [['pre_process', StandardScaler()],
@@ -101,26 +116,30 @@ def model_cv(X_train, y_train, model, score, param_grid, sampling_technique = No
         pipeline = Pipeline(steps = 
                             [['pre_process', StandardScaler()],
                             ['classifier', model]])
-                
-    grid_search = GridSearchCV(estimator=pipeline,
-                            param_grid=param_grid,
-                            scoring = ['accuracy','precision','recall','f1','roc_auc'],
-                            refit=score,
-                            cv=skf,
-                            n_jobs=-1)
+    
+    scores = cross_validate(pipeline, X_train, y_train, scoring=['accuracy','precision','recall','f1','roc_auc'],cv=skf, return_train_score=True)
+    
+    cross_val_scores(scores)
+    
+    # grid_search = GridSearchCV(estimator=pipeline,
+    #                         param_grid=param_grid,
+    #                         scoring = ['accuracy','precision','recall','f1','roc_auc'],
+    #                         refit=score,
+    #                         cv=skf,
+    #                         n_jobs=-1)
 
 
-    grid_search.fit(X_train, y_train)
+    # grid_search.fit(X_train, y_train)
 
-    cv_results = pd.DataFrame(grid_search.cv_results_)
-    best_model_results = cv_results.loc[grid_search.best_index_]
+    # cv_results = pd.DataFrame(grid_search.cv_results_)
+    # best_model_results = cv_results.loc[grid_search.best_index_]
 
-    print(f"Accuracy:, {best_model_results['mean_test_accuracy']:0.6f} (+/- {best_model_results['std_test_accuracy']:0.6f})")
-    print(f"Precision: {best_model_results['mean_test_precision']:0.6f} (+/- {best_model_results['std_test_precision']:0.6f})")
-    print(f"Recall: {best_model_results['mean_test_recall']:0.6f} (+/- {best_model_results['std_test_recall']:0.6f})")
-    print(f"F1 score: {best_model_results['mean_test_f1']:0.6f} (+/- {best_model_results['std_test_f1']:0.6f})")
-    print(f"ROC_AUC: {best_model_results['mean_test_roc_auc']:0.6f} (+/- {best_model_results['std_test_roc_auc']:0.6f})")
+    # print(f"Accuracy:, {best_model_results['mean_test_accuracy']:0.6f} (+/- {best_model_results['std_test_accuracy']:0.6f})")
+    # print(f"Precision: {best_model_results['mean_test_precision']:0.6f} (+/- {best_model_results['std_test_precision']:0.6f})")
+    # print(f"Recall: {best_model_results['mean_test_recall']:0.6f} (+/- {best_model_results['std_test_recall']:0.6f})")
+    # print(f"F1 score: {best_model_results['mean_test_f1']:0.6f} (+/- {best_model_results['std_test_f1']:0.6f})")
+    # print(f"ROC_AUC: {best_model_results['mean_test_roc_auc']:0.6f} (+/- {best_model_results['std_test_roc_auc']:0.6f})")
 
-    print('Best hyperparameters: ', grid_search.best_params_)
+    # print('Best hyperparameters: ', grid_search.best_params_)
 
-    return grid_search
+    return model
