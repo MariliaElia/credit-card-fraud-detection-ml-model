@@ -20,11 +20,11 @@ class GAN:
 
     def build_discriminator(self):
         discriminator = keras.Sequential([
-            layers.Dense(20, input_dim=self.discriminator_input_dim,
+            layers.Dense(16, input_dim=self.discriminator_input_dim,
                          kernel_regularizer=regularizers.l2(0.01)),
             layers.Dropout(self.dropout),
             layers.LeakyReLU(alpha=0.2),
-            layers.Dense(10, kernel_regularizer=regularizers.l2(0.01)),
+            layers.Dense(16, kernel_regularizer=regularizers.l2(0.01)),
             layers.Dropout(self.dropout),
             layers.LeakyReLU(alpha=0.2),
             layers.Dense(1, activation='sigmoid')
@@ -33,26 +33,24 @@ class GAN:
         plot_model(discriminator, 'discriminator.jpg', show_shapes=True,show_dtype=True)
         discriminator.compile(
                     loss="binary_crossentropy",
-                    optimizer=Adamax(lr=0.00002, beta_1=0.5),
+                    optimizer=Adam(lr=0.00002, beta_1=0.5),
                     metrics=["accuracy"],
                 )
         
-        discriminator.summary()
         self.discriminator = discriminator
 
     def build_generator(self):
         generator = keras.Sequential([
-            layers.Dense(128, input_dim=self.noise_dim, activation='relu', kernel_initializer='glorot_uniform',
+            layers.Dense(16, input_dim=self.noise_dim, activation='relu', kernel_initializer='glorot_uniform',
                          kernel_regularizer=regularizers.l2(0.01)),
             layers.Dropout(self.dropout),
-            layers.Dense(64, activation='relu', kernel_initializer='glorot_uniform',
+            layers.Dense(16, activation='relu', kernel_initializer='glorot_uniform',
                          kernel_regularizer=regularizers.l2(0.01)),
             layers.Dropout(self.dropout),
             layers.Dense(self.generator_output_dim, activation='tanh')
         ])
 
         plot_model(generator, 'generator.jpg', show_shapes=True,show_dtype=True)
-        generator.summary()
         self.generator = generator
     
     def build_gan(self):
@@ -61,7 +59,7 @@ class GAN:
         gan.add(self.generator)
         gan.add(self.discriminator)
        
-        gan.compile(loss=self.generator_loss, optimizer=Adamax(lr=0.00002, beta_1=0.5))
+        gan.compile(loss=self.generator_loss, optimizer=Adam(lr=0.00002, beta_1=0.5))
         gan.summary()
 
         self.gan = gan
@@ -81,8 +79,6 @@ class GAN:
         plt.legend()
 
         plt.show()
-        # save plot to file
-        plt.savefig('results_gan/plot_line_plot_loss.png')
     
     def train(self, X_train_GAN, y_train_GAN, epochs, batch_size):
         real = np.ones(batch_size)

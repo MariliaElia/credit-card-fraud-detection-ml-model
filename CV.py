@@ -88,25 +88,20 @@ def evaluate_model(X_test, y_test, estimator):
 
     model_scores(y_test, predictions)
 
-def model_cv(X_train, y_train, model, score, param_grid, sampling_technique = None):
+def model_cv(X_train, y_train, model, sampling_technique = None):
     skf = StratifiedKFold(n_splits=5)
 
     if sampling_technique == 'smote':
         print("SMOTE applied")
         pipeline = Pipeline(steps = 
-                            [['pre_process', StandardScaler()],
-                            ['smote', SMOTE(random_state=1)],
+                            [['smote', SMOTE(random_state=1)],
+                            ['pre_process', StandardScaler()],
                             ['classifier', model]])
     elif sampling_technique =='adasyn':
         print("ADASYN applied")
         pipeline = Pipeline(steps=
-                            [['pre_process', StandardScaler()],
-                            ['adasyn', ADASYN(random_state=1)],
-                            ['classifier', model]])
-    elif sampling_technique =='undersampling':
-        pipeline = Pipeline(steps=
-                            [['pre_process', StandardScaler()],
-                            ['undersampling', RandomUnderSampler()],
+                            [['adasyn', ADASYN(random_state=1)],
+                            ['pre_process', StandardScaler()],
                             ['classifier', model]])
     elif sampling_technique == 'original':
         print("Original applied")
@@ -120,26 +115,3 @@ def model_cv(X_train, y_train, model, score, param_grid, sampling_technique = No
     scores = cross_validate(pipeline, X_train, y_train, scoring=['accuracy','precision','recall','f1','roc_auc'],cv=skf, return_train_score=True)
     
     cross_val_scores(scores)
-    
-    # grid_search = GridSearchCV(estimator=pipeline,
-    #                         param_grid=param_grid,
-    #                         scoring = ['accuracy','precision','recall','f1','roc_auc'],
-    #                         refit=score,
-    #                         cv=skf,
-    #                         n_jobs=-1)
-
-
-    # grid_search.fit(X_train, y_train)
-
-    # cv_results = pd.DataFrame(grid_search.cv_results_)
-    # best_model_results = cv_results.loc[grid_search.best_index_]
-
-    # print(f"Accuracy:, {best_model_results['mean_test_accuracy']:0.6f} (+/- {best_model_results['std_test_accuracy']:0.6f})")
-    # print(f"Precision: {best_model_results['mean_test_precision']:0.6f} (+/- {best_model_results['std_test_precision']:0.6f})")
-    # print(f"Recall: {best_model_results['mean_test_recall']:0.6f} (+/- {best_model_results['std_test_recall']:0.6f})")
-    # print(f"F1 score: {best_model_results['mean_test_f1']:0.6f} (+/- {best_model_results['std_test_f1']:0.6f})")
-    # print(f"ROC_AUC: {best_model_results['mean_test_roc_auc']:0.6f} (+/- {best_model_results['std_test_roc_auc']:0.6f})")
-
-    # print('Best hyperparameters: ', grid_search.best_params_)
-
-    return model

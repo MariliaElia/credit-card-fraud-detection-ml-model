@@ -93,7 +93,7 @@ class VAE_oversampling:
         vae.add_loss(vae_loss)
         
         #compile model
-        vae.compile(optimizer=self.optimizer)
+        vae.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001))
 
         history = vae.fit(X_train_AE, X_train_AE, self.batch_size, self.epochs, validation_split=0.1)
 
