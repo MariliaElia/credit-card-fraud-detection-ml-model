@@ -2,7 +2,7 @@ import tensorflow as tf
 
 from keras.layers import Lambda
 from keras.layers import Input
-from keras.layers import Dense
+from keras.layers import Dense, Dropout
 from keras.models import Model
 from keras.losses import mse
 from keras import backend as K
@@ -58,7 +58,7 @@ class VAE_oversampling:
         # Mapping inputs to latent distribution parameters
         inputs = Input(shape=(self.original_dim,))
         h = Dense(self.hidden_dim, activation='relu')(inputs)
-
+        h = Dropout(0.4)(h)
         #Latent space layer
         z_mean = Dense(self.latent_dim)(h)
         z_log_sigma = Dense(self.latent_dim)(h)
@@ -72,6 +72,7 @@ class VAE_oversampling:
         # Create decoder
         latent_inputs = Input(shape=(self.latent_dim,), name='z_sampling')
         x = Dense(self.hidden_dim, activation='relu')(latent_inputs)
+        x = Dropout(0.4)(x)  # Add dropout
         outputs = Dense(self.original_dim, activation='sigmoid')(x)
         decoder = Model(latent_inputs, outputs, name='decoder')
 
@@ -82,7 +83,7 @@ class VAE_oversampling:
         #Caclulate reconstruction from input and output
         reconstruction_loss = mse(inputs, outputs)
         reconstruction_loss *= self.original_dim
-            
+
         #Kullback-liebler divergence loss
         kl_loss = 1 + z_log_sigma - K.square(z_mean) - K.exp(z_log_sigma)
         kl_loss = K.sum(kl_loss, axis=-1)
@@ -93,7 +94,7 @@ class VAE_oversampling:
         vae.add_loss(vae_loss)
         
         #compile model
-        vae.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001))
+        vae.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001))
 
         history = vae.fit(X_train_AE, X_train_AE, self.batch_size, self.epochs, validation_split=0.1)
 
@@ -103,6 +104,11 @@ class VAE_oversampling:
         self.decoder = decoder
 
         return vae
+    
+    def apply_post_processing(self, samples, noise_level=0.4):
+        print(np.random.normal(0, noise_level, (self.num_samples_to_generate, 30)))
+        noisy_samples = samples + np.random.normal(0, noise_level, (self.num_samples_to_generate, 30))
+        return noisy_samples
     
     def fit_sample(self, Xtrain, ytrain):
         #Number of samples to generate
@@ -123,7 +129,10 @@ class VAE_oversampling:
         
         #Generate the synthetic samples by passing the z sample
         synthetic_samples = self.decoder.predict(z_latent_sample)
-            
+
+        # Apply post-processing to the synthetic samples
+        #post_processed_samples = self.apply_post_processing(synthetic_samples)
+        
         synthetic_X = ss.inverse_transform(synthetic_samples)
         synthetic_y = np.ones(num_samples_to_generate)\
             * self.minority_class_id
