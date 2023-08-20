@@ -88,30 +88,80 @@ def evaluate_model(X_test, y_test, estimator):
 
     model_scores(y_test, predictions)
 
-def model_cv(X_train, y_train, model, sampling_technique = None):
-    skf = StratifiedKFold(n_splits=5)
+# def model_cv(X_train, y_train, model, sampling_technique = None):
+#     skf = StratifiedKFold(n_splits=5)
 
-    if sampling_technique == 'smote':
-        print("SMOTE applied")
-        pipeline = Pipeline(steps = 
-                            [['smote', SMOTE(random_state=1)],
-                            ['pre_process', StandardScaler()],
-                            ['classifier', model]])
-    elif sampling_technique =='adasyn':
-        print("ADASYN applied")
-        pipeline = Pipeline(steps=
-                            [['adasyn', ADASYN(random_state=1)],
-                            ['pre_process', StandardScaler()],
-                            ['classifier', model]])
-    elif sampling_technique == 'original':
-        print("Original applied")
-        pipeline = Pipeline(steps = 
-                            [['classifier', model]])
-    else:
-        pipeline = Pipeline(steps = 
-                            [['pre_process', StandardScaler()],
-                            ['classifier', model]])
+#     if sampling_technique == 'smote':
+#         print("SMOTE applied")
+#         pipeline = Pipeline(steps = 
+#                             [['smote', SMOTE(random_state=1)],
+#                             ['pre_process', StandardScaler()],
+#                             ['classifier', model]])
+#     elif sampling_technique =='adasyn':
+#         print("ADASYN applied")
+#         pipeline = Pipeline(steps=
+#                             [['adasyn', ADASYN(random_state=1)],
+#                             ['pre_process', StandardScaler()],
+#                             ['classifier', model]])
+#     elif sampling_technique == 'original':
+#         print("Original applied")
+#         pipeline = Pipeline(steps = 
+#                             [['classifier', model]])
+#     else:
+#         pipeline = Pipeline(steps = 
+#                             [['pre_process', StandardScaler()],
+#                             ['classifier', model]])
     
-    scores = cross_validate(pipeline, X_train, y_train, scoring=['accuracy','precision','recall','f1','roc_auc'],cv=skf, return_train_score=True)
+#     scores = cross_validate(pipeline, X_train, y_train, scoring=['accuracy','precision','recall','f1','roc_auc'],cv=skf, return_train_score=True)
     
+#     cross_val_scores(scores)
+
+def model_cv(X_train, y_train, model, sampling_technique=None):
+    skf = StratifiedKFold(n_splits=5)
+    scores = {
+        'train_accuracy': [],
+        'test_accuracy': [],
+        'train_precision': [],
+        'test_precision': [],
+        'train_recall': [],
+        'test_recall': [],
+        'train_f1': [],
+        'test_f1': [],
+        'train_roc_auc': [],
+        'test_roc_auc': []
+    }
+
+    for train_index, test_index in skf.split(X_train, y_train):
+        X_fold_train, X_fold_test = X_train.iloc[train_index], X_train.iloc[test_index]
+        y_fold_train, y_fold_test = y_train.iloc[train_index], y_train.iloc[test_index]
+
+        if sampling_technique == 'smote':
+            print("SMOTE applied")
+            sampler = SMOTE(random_state=1)
+            X_fold_train_resampled, y_fold_train_resampled = sampler.fit_resample(X_fold_train, y_fold_train)
+        elif sampling_technique == 'adasyn':
+            print("ADASYN applied")
+            sampler = ADASYN(random_state=1)
+            X_fold_train_resampled, y_fold_train_resampled = sampler.fit_resample(X_fold_train, y_fold_train)
+        else:
+            X_fold_train_resampled, y_fold_train_resampled = X_fold_train, y_fold_train
+
+        pipeline = Pipeline(steps=[('pre_process', StandardScaler()), ('classifier', model)])
+
+        pipeline.fit(X_fold_train_resampled, y_fold_train_resampled)
+
+        y_fold_train_pred = pipeline.predict(X_fold_train_resampled)
+        y_fold_test_pred = pipeline.predict(X_fold_test)
+
+        scores['train_accuracy'].append(accuracy_score(y_fold_train_resampled, y_fold_train_pred))
+        scores['test_accuracy'].append(accuracy_score(y_fold_test, y_fold_test_pred))
+        scores['train_precision'].append(precision_score(y_fold_train_resampled, y_fold_train_pred))
+        scores['test_precision'].append(precision_score(y_fold_test, y_fold_test_pred))
+        scores['train_recall'].append(recall_score(y_fold_train_resampled, y_fold_train_pred))
+        scores['test_recall'].append(recall_score(y_fold_test, y_fold_test_pred))
+        scores['train_f1'].append(f1_score(y_fold_train_resampled, y_fold_train_pred))
+        scores['test_f1'].append(f1_score(y_fold_test, y_fold_test_pred))
+        scores['train_roc_auc'].append(roc_auc_score(y_fold_train_resampled, y_fold_train_pred))
+        scores['test_roc_auc'].append(roc_auc_score(y_fold_test, y_fold_test_pred))
+
     cross_val_scores(scores)

@@ -58,7 +58,7 @@ class VAE_oversampling:
         # Mapping inputs to latent distribution parameters
         inputs = Input(shape=(self.original_dim,))
         h = Dense(self.hidden_dim, activation='relu')(inputs)
-        h = Dropout(0.4)(h)
+
         #Latent space layer
         z_mean = Dense(self.latent_dim)(h)
         z_log_sigma = Dense(self.latent_dim)(h)
@@ -72,7 +72,7 @@ class VAE_oversampling:
         # Create decoder
         latent_inputs = Input(shape=(self.latent_dim,), name='z_sampling')
         x = Dense(self.hidden_dim, activation='relu')(latent_inputs)
-        x = Dropout(0.4)(x)  # Add dropout
+
         outputs = Dense(self.original_dim, activation='sigmoid')(x)
         decoder = Model(latent_inputs, outputs, name='decoder')
 
@@ -94,7 +94,7 @@ class VAE_oversampling:
         vae.add_loss(vae_loss)
         
         #compile model
-        vae.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001))
+        vae.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001))
 
         history = vae.fit(X_train_AE, X_train_AE, self.batch_size, self.epochs, validation_split=0.1)
 
@@ -130,9 +130,6 @@ class VAE_oversampling:
         #Generate the synthetic samples by passing the z sample
         synthetic_samples = self.decoder.predict(z_latent_sample)
 
-        # Apply post-processing to the synthetic samples
-        #post_processed_samples = self.apply_post_processing(synthetic_samples)
-        
         synthetic_X = ss.inverse_transform(synthetic_samples)
         synthetic_y = np.ones(num_samples_to_generate)\
             * self.minority_class_id

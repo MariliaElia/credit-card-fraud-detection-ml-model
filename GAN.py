@@ -33,7 +33,7 @@ class GAN:
         plot_model(discriminator, 'discriminator.jpg', show_shapes=True,show_dtype=True)
         discriminator.compile(
                     loss="binary_crossentropy",
-                    optimizer=Adamax(lr=0.00002, beta_1=0.5),
+                    optimizer=Adam(lr=0.00002, beta_1=0.5),
                     metrics=["accuracy"],
                 )
         
@@ -59,7 +59,7 @@ class GAN:
         gan.add(self.generator)
         gan.add(self.discriminator)
        
-        gan.compile(loss=self.generator_loss, optimizer=Adamax(lr=0.00002, beta_1=0.5))
+        gan.compile(loss=self.generator_loss, optimizer=Adam(lr=0.00002, beta_1=0.5))
         gan.summary()
 
         self.gan = gan
