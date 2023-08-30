@@ -2,7 +2,7 @@ import tensorflow as tf
 
 from keras.layers import Lambda
 from keras.layers import Input
-from keras.layers import Dense, Dropout
+from keras.layers import Dense
 from keras.models import Model
 from keras.losses import mse
 from keras import backend as K
@@ -94,7 +94,7 @@ class VAE_oversampling:
         vae.add_loss(vae_loss)
         
         #compile model
-        vae.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001))
+        vae.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001))
 
         history = vae.fit(X_train_AE, X_train_AE, self.batch_size, self.epochs, validation_split=0.1)
 
@@ -110,6 +110,7 @@ class VAE_oversampling:
         noisy_samples = samples + np.random.normal(0, noise_level, (self.num_samples_to_generate, 30))
         return noisy_samples
     
+    # Train VAE, generate synthetic data and concatenate with training set
     def fit_sample(self, Xtrain, ytrain):
         #Number of samples to generate
         num_samples_to_generate = self.num_samples_to_generate

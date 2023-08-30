@@ -20,11 +20,11 @@ class GAN:
 
     def build_discriminator(self):
         discriminator = keras.Sequential([
-            layers.Dense(20, input_dim=self.discriminator_input_dim,
+            layers.Dense(16, input_dim=self.discriminator_input_dim,
                          kernel_regularizer=regularizers.l2(0.01)),
             layers.Dropout(self.dropout),
             layers.LeakyReLU(alpha=0.2),
-            layers.Dense(10, kernel_regularizer=regularizers.l2(0.01)),
+            layers.Dense(32, kernel_regularizer=regularizers.l2(0.01)),
             layers.Dropout(self.dropout),
             layers.LeakyReLU(alpha=0.2),
             layers.Dense(1, activation='sigmoid')
@@ -33,7 +33,7 @@ class GAN:
         plot_model(discriminator, 'discriminator.jpg', show_shapes=True,show_dtype=True)
         discriminator.compile(
                     loss="binary_crossentropy",
-                    optimizer=Adam(lr=0.00002, beta_1=0.5),
+                    optimizer=Adam(lr=0.0002, beta_1=0.5),
                     metrics=["accuracy"],
                 )
         
@@ -41,10 +41,10 @@ class GAN:
 
     def build_generator(self):
         generator = keras.Sequential([
-            layers.Dense(128, input_dim=self.noise_dim, activation='relu', kernel_initializer='glorot_uniform',
+            layers.Dense(64, input_dim=self.noise_dim, activation='relu', kernel_initializer='glorot_uniform',
                          kernel_regularizer=regularizers.l2(0.01)),
             layers.Dropout(self.dropout),
-            layers.Dense(64, activation='relu', kernel_initializer='glorot_uniform',
+            layers.Dense(32, activation='relu', kernel_initializer='glorot_uniform',
                          kernel_regularizer=regularizers.l2(0.01)),
             layers.Dropout(self.dropout),
             layers.Dense(self.generator_output_dim, activation='tanh')
@@ -59,7 +59,7 @@ class GAN:
         gan.add(self.generator)
         gan.add(self.discriminator)
        
-        gan.compile(loss=self.generator_loss, optimizer=Adam(lr=0.00002, beta_1=0.5))
+        gan.compile(loss=self.generator_loss, optimizer=Adam(lr=0.0002, beta_1=0.5))
         gan.summary()
 
         self.gan = gan
@@ -130,6 +130,7 @@ class GAN:
         total_loss = K.mean(bce_loss + kl_loss)
         return total_loss
 
+    # Train the GAN model, generate synthetic samples and concatenate with training data
     def fit_sample(self, X_train, y_train):
         self.build_discriminator()
         self.build_generator()
@@ -148,7 +149,3 @@ class GAN:
         y_new = np.concatenate((y_train, synthetic_y))
 
         return(X_new, y_new)
-
-
-
-
