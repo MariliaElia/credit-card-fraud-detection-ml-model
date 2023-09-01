@@ -1,12 +1,21 @@
+## GAN .py
+
+#Data manipulation Libraries
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-from sklearn.preprocessing import StandardScaler
+
+#Model Liraries
 from tensorflow import keras
 from tensorflow.keras import layers, regularizers
 from tensorflow.keras.optimizers import Adam, Adamax
 from tensorflow.keras.utils import plot_model
 from keras import backend as K
+
+#Preprocessing Library
+from sklearn.preprocessing import StandardScaler
+
+#Visual Libraries
+from matplotlib import pyplot as plt
 
 class GAN:
     def __init__(self, generator_output_dim, discriminator_input_dim, noise_dim, num_samples, epochs, batch_size, dropout):

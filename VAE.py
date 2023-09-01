@@ -1,5 +1,10 @@
-import tensorflow as tf
+## VAE.py
 
+#Data manipulation Libraries
+import numpy as np
+
+#Model Liraries
+import tensorflow as tf
 from keras.layers import Lambda
 from keras.layers import Input
 from keras.layers import Dense
@@ -7,14 +12,11 @@ from keras.models import Model
 from keras.losses import mse
 from keras import backend as K
 
-import numpy as np
-import pandas as pd
-
+#Preprocessing Library
 from sklearn.preprocessing import StandardScaler
 
-# Visual Libraries
+#Visual Libraries
 from matplotlib import pyplot as plt
-import seaborn as sns
 plt.style.use('ggplot')
 
 class VAE_oversampling:

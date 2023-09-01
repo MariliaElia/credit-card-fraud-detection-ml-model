@@ -1,3 +1,6 @@
+## CV.py
+# Includes helper functions for cross-validation and evaluation of models
+
 # Performance metrics libraries
 from sklearn import metrics
 from sklearn.metrics import confusion_matrix
