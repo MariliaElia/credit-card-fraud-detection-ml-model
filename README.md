@@ -27,7 +27,7 @@ The two generative models tested are Generative Adversarial Network (GAN) and Va
 -	`CV.py`: helper functions for implementing cross validation, and printing results.
 -	`GAN.py`: GAN functions for training the model, generating synthetic samples, and concatenating with training data.
 -	`VAE.py`: VAE functions for training the model, generating synthetic samples, and concatenating with training data.
--	`LR_model.ipynb, RF_model.ipynb, KNN_model.ipynb, XGB_model.ipynb`: training and evaluation of LR, RF, KNN, XGB respectively, with original distribution of data, SMOTE, ADASYN, VAE, and GAN
+-	`classifiers.ipynb`: training and evaluation of LR, RF, KNN, XGB, with original distribution of data, SMOTE, ADASYN, VAE, and GAN
 
 
 # Data Source

@@ -18,7 +18,8 @@ from sklearn.preprocessing import StandardScaler
 from matplotlib import pyplot as plt
 
 class GAN:
-    def __init__(self, generator_output_dim, discriminator_input_dim, noise_dim, num_samples, epochs, batch_size, dropout):
+    def __init__(self, generator_output_dim, discriminator_input_dim, noise_dim, num_samples, epochs, 
+                 batch_size, dropout):
         self.generator_output_dim = generator_output_dim
         self.discriminator_input_dim = discriminator_input_dim
         self.noise_dim = noise_dim
